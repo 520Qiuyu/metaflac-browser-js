@@ -25,10 +25,8 @@ test/README.md
 PUBLISH_GUIDE.md
 PUBLISH.md
 
-# 构建文件
-dist/
+# 构建文件（保留 dist/，因为需要发布）
 build/
-*.map
 
 # 临时文件
 *.tmp

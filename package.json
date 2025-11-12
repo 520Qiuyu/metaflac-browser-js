@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "A pure JavaScript implementation of the metaflac (official FLAC tool) for browser",
   "main": "index.js",
-  "browser": "index.js",
-  "type": "commonjs",
+  "browser": "dist/metaflac-browser-js.js",
+  "type": "module",
   "files": [
     "index.js",
     "lib/",
+    "dist/",
     "README.md"
   ],
   "exports": {
@@ -19,7 +20,10 @@
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "build:watch": "rollup -c -w",
+    "prepublishOnly": "npm run build && npm pack --dry-run"
   },
   "repository": {
     "type": "git",
@@ -43,5 +47,12 @@
   "bugs": {
     "url": "https://github.com/520Qiuyu/metaflac-browser-js/issues"
   },
-  "homepage": "https://github.com/520Qiuyu/metaflac-browser-js#readme"
+  "homepage": "https://github.com/520Qiuyu/metaflac-browser-js#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "rollup": "^4.9.0"
+  },
+  "unpkg": "dist/metaflac-browser-js.js",
+  "jsdelivr": "dist/metaflac-browser-js.js"
 }

@@ -12,9 +12,64 @@ npm install metaflac-browser-js
 
 ## 使用方法
 
-> **重要提示**：此包使用 CommonJS 模块格式，需要通过打包工具（webpack、rollup、vite 等）才能在浏览器中使用 ES6 `import` 语法。
+### 方式一：使用 Script 标签（最简单，无需打包工具）
 
-### 方式一：使用 ES6 import（推荐，需要打包工具）
+直接通过 `<script>` 标签引入，无需任何打包工具：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Metaflac 示例</title>
+</head>
+<body>
+    <input type="file" id="fileInput" accept=".flac" />
+    
+    <!-- 方式 1: 使用本地文件 -->
+    <script src="./node_modules/metaflac-browser-js/dist/metaflac-browser-js.js"></script>
+    
+    <!-- 方式 2: 使用 CDN (unpkg) -->
+    <!-- <script src="https://unpkg.com/metaflac-browser-js@latest/dist/metaflac-browser-js.js"></script> -->
+    
+    <!-- 方式 3: 使用 CDN (jsDelivr) -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/metaflac-browser-js@latest/dist/metaflac-browser-js.js"></script> -->
+    
+    <script>
+        const fileInput = document.querySelector('#fileInput');
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Metaflac 会作为全局变量可用
+                const flac = await Metaflac.fromFile(file);
+                
+                // 读取信息
+                console.log('采样率:', flac.getSampleRate());
+                console.log('声道数:', flac.getChannels());
+                console.log('标题:', flac.getTag('TITLE'));
+                
+                // 设置标签
+                flac.setTag('TITLE=我的音乐');
+                flac.setTag('ARTIST=我的艺术家');
+                
+                // 保存为 Blob
+                const modifiedBlob = flac.saveAsBlob();
+                
+                // 下载文件
+                const url = URL.createObjectURL(modifiedBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'modified.flac';
+                a.click();
+            }
+        });
+    </script>
+</body>
+</html>
+```
+
+> **注意**：使用 script 标签时，`Metaflac` 会作为全局变量可用。
+
+### 方式二：使用 ES6 import（需要打包工具）
 
 在使用 webpack、rollup、vite 等打包工具的项目中：
 
@@ -51,7 +106,7 @@ fileInput.addEventListener('change', async (e) => {
 });
 ```
 
-### 方式二：使用 require（需要打包工具支持 CommonJS）
+### 方式三：使用 require（需要打包工具支持 CommonJS）
 
 ```javascript
 const Metaflac = require('metaflac-browser-js');
