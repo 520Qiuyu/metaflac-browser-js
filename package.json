@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "A pure JavaScript implementation of the metaflac (official FLAC tool) for browser",
   "main": "index.js",
-  "browser": "dist/metaflac-browser-js.js",
-  "type": "module",
+  "browser": "dist/metaflac-browser-js.esm.js",
+  "type": "commonjs",
   "files": [
     "index.js",
     "lib/",
@@ -13,10 +13,10 @@
   ],
   "exports": {
     ".": {
-      "browser": "./index.js",
+      "browser": "./dist/metaflac-browser-js.esm.js",
+      "import": "./dist/metaflac-browser-js.esm.js",
       "require": "./index.js",
-      "import": "./index.js",
-      "default": "./index.js"
+      "default": "./dist/metaflac-browser-js.esm.js"
     }
   },
   "scripts": {

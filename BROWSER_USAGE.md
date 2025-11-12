@@ -111,6 +111,8 @@ const flac = Metaflac.fromUint8Array(uint8Array);
 - `exportPictureToBlob(index)` - 导出图片为 Blob
 - `exportPictureToArrayBuffer(index)` - 导出图片为 ArrayBuffer
 - `getPicturesSpecs()` - 获取所有图片规格
+- `removePicture(index)` - 删除指定索引的图片
+- `removeAllPictures()` - 删除所有图片
 
 #### 保存
 

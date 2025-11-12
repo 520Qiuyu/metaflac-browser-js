@@ -440,6 +440,30 @@ class Metaflac {
     }
 
     /**
+     * Remove a picture at the specified index.
+     * 
+     * @param {number} index - 图片索引，默认为 0
+     */
+    removePicture(index = 0) {
+        if (this.pictures.length > index) {
+            this.pictures.splice(index, 1);
+            this.picturesSpecs.splice(index, 1);
+            this.picturesDatas.splice(index, 1);
+        } else {
+            throw new Error(`Picture index ${index} does not exist`);
+        }
+    }
+
+    /**
+     * Remove all pictures.
+     */
+    removeAllPictures() {
+        this.pictures = [];
+        this.picturesSpecs = [];
+        this.picturesDatas = [];
+    }
+
+    /**
      * Return all tags.
      */
     getAllTags() {
@@ -522,7 +546,9 @@ class Metaflac {
         this.pictures.forEach(block => {
             bufferArray.push(this.buildMetadataBlock(PICTURE, block));
         });
-        bufferArray.push(this.buildMetadataBlock(PADDING, this.padding, true));
+        // 如果 padding 为 null，创建一个空的 PADDING 块（至少 4 字节）
+        const padding = this.padding || BrowserBuffer.alloc(4);
+        bufferArray.push(this.buildMetadataBlock(PADDING, padding, true));
         return bufferArray;
     }
 
