@@ -1,6 +1,6 @@
 {
   "name": "metaflac-browser-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A pure JavaScript implementation of the metaflac (official FLAC tool) for browser",
   "main": "index.js",
   "browser": "dist/metaflac-browser-js.esm.js",
