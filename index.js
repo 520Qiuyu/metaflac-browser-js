@@ -1,6 +1,5 @@
-const fs = require('fs');
-const fileType = require('file-type');
-const imageSize = require('image-size');
+const BrowserBuffer = require('./lib/buffer');
+const { detectImageType, getImageSize } = require('./lib/imageUtils');
 const formatVorbisComment = require('./lib/formatVorbisComment');
 
 const BLOCK_TYPE = {
@@ -21,10 +20,36 @@ const VORBIS_COMMENT = 4;
 const CUESHEET = 5;
 const PICTURE = 6;
 
+/**
+ * 将各种数据格式转换为 BrowserBuffer
+ * @param {ArrayBuffer|Uint8Array|File|Blob|BrowserBuffer} data - 输入数据
+ * @returns {Promise<BrowserBuffer>}
+ */
+async function toBrowserBuffer(data) {
+    if (data instanceof BrowserBuffer) {
+        return data;
+    }
+    if (data instanceof Uint8Array) {
+        return new BrowserBuffer(data);
+    }
+    if (data instanceof ArrayBuffer) {
+        return new BrowserBuffer(data);
+    }
+    if (data instanceof File || data instanceof Blob) {
+        const arrayBuffer = await data.arrayBuffer();
+        return new BrowserBuffer(arrayBuffer);
+    }
+    throw new Error('Unsupported data type. Expected ArrayBuffer, Uint8Array, File, Blob, or BrowserBuffer.');
+}
+
 class Metaflac {
+    /**
+     * 创建 Metaflac 实例
+     * @param {ArrayBuffer|Uint8Array|File|Blob|BrowserBuffer} flac - FLAC 文件数据
+     */
     constructor(flac) {
-        if (typeof flac !== 'string' && !Buffer.isBuffer(flac)) {
-            throw new Error('Metaflac(flac) flac must be string or buffer.');
+        if (flac instanceof File || flac instanceof Blob) {
+            throw new Error('File and Blob objects must be loaded asynchronously. Use Metaflac.fromFile() or Metaflac.fromBlob() instead.');
         }
         this.flac = flac;
         this.buffer = null;
@@ -42,8 +67,54 @@ class Metaflac {
         this.init();
     }
 
+    /**
+     * 从 File 对象创建 Metaflac 实例（异步）
+     * @param {File} file - File 对象
+     * @returns {Promise<Metaflac>}
+     */
+    static async fromFile(file) {
+        const buffer = await toBrowserBuffer(file);
+        return new Metaflac(buffer);
+    }
+
+    /**
+     * 从 Blob 对象创建 Metaflac 实例（异步）
+     * @param {Blob} blob - Blob 对象
+     * @returns {Promise<Metaflac>}
+     */
+    static async fromBlob(blob) {
+        const buffer = await toBrowserBuffer(blob);
+        return new Metaflac(buffer);
+    }
+
+    /**
+     * 从 ArrayBuffer 创建 Metaflac 实例
+     * @param {ArrayBuffer} arrayBuffer - ArrayBuffer 对象
+     * @returns {Metaflac}
+     */
+    static fromArrayBuffer(arrayBuffer) {
+        return new Metaflac(arrayBuffer);
+    }
+
+    /**
+     * 从 Uint8Array 创建 Metaflac 实例
+     * @param {Uint8Array} uint8Array - Uint8Array 对象
+     * @returns {Metaflac}
+     */
+    static fromUint8Array(uint8Array) {
+        return new Metaflac(uint8Array);
+    }
+
     init() {
-        typeof this.flac === 'string' ? this.buffer = fs.readFileSync(this.flac) : this.buffer = this.flac;
+        if (this.flac instanceof BrowserBuffer) {
+            this.buffer = this.flac;
+        } else if (this.flac instanceof Uint8Array) {
+            this.buffer = new BrowserBuffer(this.flac);
+        } else if (this.flac instanceof ArrayBuffer) {
+            this.buffer = new BrowserBuffer(this.flac);
+        } else {
+            throw new Error('Metaflac(flac) flac must be ArrayBuffer, Uint8Array, or BrowserBuffer.');
+        }
 
         let offset = 0;
         const marker = this.buffer.slice(0, offset += 4).toString('ascii');
@@ -57,7 +128,6 @@ class Metaflac {
             blockType = this.buffer.readUInt8(offset++);
             isLastBlock = blockType > 128;
             blockType = blockType % 128;
-            // console.log('Block Type: %d %s', blockType, BLOCK_TYPE[blockType]);
         
             const blockLength = this.buffer.readUIntBE(offset, 3);
             offset += 3;
@@ -83,7 +153,6 @@ class Metaflac {
             if ([APPLICATION, SEEKTABLE, CUESHEET].includes(blockType)) {
                 this.blocks.push([blockType, this.buffer.slice(offset, offset + blockLength)]);
             }
-            // console.log('Block Length: %d', blockLength);
             offset += blockLength;
         }
         this.framesOffset = offset;
@@ -91,17 +160,14 @@ class Metaflac {
 
     parseVorbisComment() {
         const vendorLength = this.vorbisComment.readUInt32LE(0);
-        // console.log('Vendor length: %d', vendorLength);
         this.vendorString = this.vorbisComment.slice(4, vendorLength + 4).toString('utf8');
-        // console.log('Vendor string: %s', this.vendorString);
         const userCommentListLength = this.vorbisComment.readUInt32LE(4 + vendorLength);
-        // console.log('user_comment_list_length: %d', userCommentListLength);
         const userCommentListBuffer = this.vorbisComment.slice(4 + vendorLength + 4);
         for (let offset = 0; offset < userCommentListBuffer.length; ) {
             const length = userCommentListBuffer.readUInt32LE(offset);
             offset += 4;
-            const comment = userCommentListBuffer.slice(offset, offset += length).toString('utf8');
-            // console.log('Comment length: %d, this.buffer: %s', length, comment);
+            const comment = userCommentListBuffer.slice(offset, offset + length).toString('utf8');
+            offset += length;
             this.tags.push(comment);
         }
     }
@@ -117,7 +183,8 @@ class Metaflac {
             offset += mimeTypeLength;
             const descriptionLength = picture.readUInt32BE(offset);
             offset += 4;
-            const description = picture.slice(offset, offset += descriptionLength).toString('utf8');
+            const description = picture.slice(offset, offset + descriptionLength).toString('utf8');
+            offset += descriptionLength;
             const width = picture.readUInt32BE(offset);
             offset += 4;
             const height = picture.readUInt32BE(offset);
@@ -193,14 +260,14 @@ class Metaflac {
      */
     getChannels() {
         // 3 bits
-        return this.streamInfo.readUIntBE(10, 3) & 0x00000f >> 1;
+        return (this.streamInfo.readUIntBE(10, 3) & 0x00000f) >> 1;
     }
 
     /**
      * Get the # of bits per sample from the STREAMINFO block.
      */
     getBps() {
-        return this.streamInfo.readUIntBE(12, 2) & 0x01f0 >> 4;
+        return (this.streamInfo.readUIntBE(12, 2) & 0x01f0) >> 4;
     }
 
     /**
@@ -276,34 +343,13 @@ class Metaflac {
     }
 
     /**
-     * Like setTag, except the VALUE is a filename whose contents will be read verbatim to set the tag value.
-     * 
-     * @param {string} field 
-     */
-    setTagFromFile(field) {
-        const position = field.indexOf('=');
-        if (position === -1) {
-            throw new Error(`malformed vorbis comment field "${field}", field contains no '=' character`);
-        }
-        const name = field.substring(0, position);
-        const filename = field.substr(position + 1);
-        let value;
-        try {
-            value = fs.readFileSync(filename, 'utf8');
-        } catch (e) {
-            throw new Error(`can't open file '${filename}' for '${name}' tag value`);
-        }
-        this.tags.push(`${name}=${value}`);
-    }
-
-    /**
-     * Import tags from a file.
+     * Import tags from a string.
      * Each line should be of the form NAME=VALUE.
      * 
-     * @param {string} filename
+     * @param {string} tagsString - 标签字符串，每行一个标签
      */
-    importTagsFrom(filename) {
-        const tags = fs.readFileSync(filename, 'utf8').split('\n');
+    importTagsFromString(tagsString) {
+        const tags = tagsString.split('\n').filter(line => line.trim());
         tags.forEach(line => {
             if (line.indexOf('=') === -1) {
                 throw new Error(`malformed vorbis comment "${line}", contains no '=' character`);
@@ -313,65 +359,84 @@ class Metaflac {
     }
 
     /**
-     * Export tags to a file.
+     * Export tags to a string.
      * Each line will be of the form NAME=VALUE.
      * 
-     * @param {string} filename
+     * @returns {string}
      */
-    exportTagsTo(filename) {
-        fs.writeFileSync(filename, this.tags.join('\n'), 'utf8');
+    exportTagsToString() {
+        return this.tags.join('\n');
     }
 
     /**
      * Import a picture and store it in a PICTURE metadata block.
      * 
-     * @param {string} filename 
-     */
-    importPictureFrom(filename) {
-        const picture = fs.readFileSync(filename);
-        const {mime} = fileType(picture);
-        if (mime !== 'image/jpeg' && mime !== 'image/png') {
-            throw new Error(`only support image/jpeg and image/png picture temporarily, current import ${mime}`);
-        }
-        const dimensions = imageSize(filename);
-        const spec = this.buildSpecification({
-            mime: mime,
-            width: dimensions.width,
-            height: dimensions.height,
-        });
-        this.pictures.push(this.buildPictureBlock(picture, spec));
-        this.picturesSpecs.push(spec);
-    }
-
-    /**
-     * Import a picture and store it in a PICTURE metadata block.
-     * 
-     * @param {Buffer} picture
+     * @param {Uint8Array|ArrayBuffer|BrowserBuffer} picture - 图片数据
      */
     importPictureFromBuffer(picture) {
-        const {mime} = fileType(picture);
+        let pictureBuffer;
+        if (picture instanceof BrowserBuffer) {
+            pictureBuffer = picture;
+        } else if (picture instanceof Uint8Array) {
+            pictureBuffer = new BrowserBuffer(picture);
+        } else if (picture instanceof ArrayBuffer) {
+            pictureBuffer = new BrowserBuffer(picture);
+        } else {
+            throw new Error('Picture must be Uint8Array, ArrayBuffer, or BrowserBuffer');
+        }
+
+        const pictureArray = pictureBuffer.toUint8Array();
+        const { mime } = detectImageType(pictureArray);
         if (mime !== 'image/jpeg' && mime !== 'image/png') {
             throw new Error(`only support image/jpeg and image/png picture temporarily, current import ${mime}`);
         }
-        const dimensions = imageSize(picture);
+        const dimensions = getImageSize(pictureArray);
         const spec = this.buildSpecification({
             mime: mime,
             width: dimensions.width,
             height: dimensions.height,
         });
-        this.pictures.push(this.buildPictureBlock(picture, spec));
+        this.pictures.push(this.buildPictureBlock(pictureBuffer, spec));
         this.picturesSpecs.push(spec);
     }
 
     /**
-     * Export PICTURE block to a file.
+     * Import a picture from File or Blob (async).
      * 
-     * @param {string} filename 
+     * @param {File|Blob} file - 图片文件
+     * @returns {Promise<void>}
      */
-    exportPictureTo(filename) {
-        if (this.picturesDatas.length > 0) {
-            fs.writeFileSync(filename, this.picturesDatas[0]);
+    async importPictureFromFile(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        this.importPictureFromBuffer(arrayBuffer);
+    }
+
+    /**
+     * Export PICTURE block to a Blob.
+     * 
+     * @param {number} index - 图片索引，默认为 0
+     * @returns {Blob}
+     */
+    exportPictureToBlob(index = 0) {
+        if (this.picturesDatas.length > index) {
+            const pictureData = this.picturesDatas[index];
+            const spec = this.picturesSpecs[index];
+            return new Blob([pictureData.toArrayBuffer()], { type: spec.mime });
         }
+        throw new Error(`Picture index ${index} does not exist`);
+    }
+
+    /**
+     * Export PICTURE block to ArrayBuffer.
+     * 
+     * @param {number} index - 图片索引，默认为 0
+     * @returns {ArrayBuffer}
+     */
+    exportPictureToArrayBuffer(index = 0) {
+        if (this.picturesDatas.length > index) {
+            return this.picturesDatas[index].toArrayBuffer();
+        }
+        throw new Error(`Picture index ${index} does not exist`);
     }
 
     /**
@@ -397,32 +462,32 @@ class Metaflac {
     /**
      * Build a picture block.
      * 
-     * @param {Buffer} picture
-     * @param {Object} specification
-     * @returns {Buffer}
+     * @param {BrowserBuffer} picture - 图片数据
+     * @param {Object} specification - 图片规格
+     * @returns {BrowserBuffer}
      */
     buildPictureBlock(picture, specification = {}) {
-        const pictureType = Buffer.alloc(4);
-        const mimeLength = Buffer.alloc(4);
-        const mime = Buffer.from(specification.mime, 'ascii');
-        const descriptionLength = Buffer.alloc(4);
-        const description = Buffer.from(specification.description, 'utf8');
-        const width = Buffer.alloc(4);
-        const height = Buffer.alloc(4);
-        const depth = Buffer.alloc(4);
-        const colors = Buffer.alloc(4);
-        const pictureLength = Buffer.alloc(4);
+        const pictureType = BrowserBuffer.alloc(4);
+        const mimeLength = BrowserBuffer.alloc(4);
+        const mime = BrowserBuffer.from(specification.mime, 'ascii');
+        const descriptionLength = BrowserBuffer.alloc(4);
+        const description = BrowserBuffer.from(specification.description, 'utf8');
+        const width = BrowserBuffer.alloc(4);
+        const height = BrowserBuffer.alloc(4);
+        const depth = BrowserBuffer.alloc(4);
+        const colors = BrowserBuffer.alloc(4);
+        const pictureLength = BrowserBuffer.alloc(4);
 
-        pictureType.writeUInt32BE(specification.type);
-        mimeLength.writeUInt32BE(specification.mime.length);
-        descriptionLength.writeUInt32BE(specification.description.length);
-        width.writeUInt32BE(specification.width);
-        height.writeUInt32BE(specification.height);
-        depth.writeUInt32BE(specification.depth);
-        colors.writeUInt32BE(specification.colors);
-        pictureLength.writeUInt32BE(picture.length);
+        pictureType.writeUInt32BE(specification.type, 0);
+        mimeLength.writeUInt32BE(specification.mime.length, 0);
+        descriptionLength.writeUInt32BE(specification.description.length, 0);
+        width.writeUInt32BE(specification.width, 0);
+        height.writeUInt32BE(specification.height, 0);
+        depth.writeUInt32BE(specification.depth, 0);
+        colors.writeUInt32BE(specification.colors, 0);
+        pictureLength.writeUInt32BE(picture.length, 0);
 
-        return Buffer.concat([
+        return BrowserBuffer.concat([
             pictureType,
             mimeLength,
             mime,
@@ -438,13 +503,13 @@ class Metaflac {
     }
 
     buildMetadataBlock(type, block, isLast = false) {
-        const header = Buffer.alloc(4);
+        const header = BrowserBuffer.alloc(4);
         if (isLast) {
             type += 128;
         }
         header.writeUIntBE(type, 0, 1);
         header.writeUIntBE(block.length, 1, 3);
-        return Buffer.concat([header, block]);
+        return BrowserBuffer.concat([header, block]);
     }
 
     buildMetadata() {
@@ -467,14 +532,34 @@ class Metaflac {
     }
 
     /**
-     * Save change to file or return changed buffer.
+     * Save changes and return ArrayBuffer.
+     * 
+     * @returns {ArrayBuffer}
      */
     save() {
-        if (typeof this.flac === 'string') {
-            fs.writeFileSync(this.flac, Buffer.concat(this.buildStream()));
-        } else {
-            return Buffer.concat(this.buildStream());
-        }
+        const stream = this.buildStream();
+        const result = BrowserBuffer.concat(stream);
+        return result.toArrayBuffer();
+    }
+
+    /**
+     * Save changes and return Blob.
+     * 
+     * @returns {Blob}
+     */
+    saveAsBlob() {
+        const arrayBuffer = this.save();
+        return new Blob([arrayBuffer], { type: 'audio/flac' });
+    }
+
+    /**
+     * Save changes and return BrowserBuffer.
+     * 
+     * @returns {BrowserBuffer}
+     */
+    saveAsBuffer() {
+        const stream = this.buildStream();
+        return BrowserBuffer.concat(stream);
     }
 }
 

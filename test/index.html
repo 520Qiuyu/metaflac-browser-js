@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metaflac Browser API 测试</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Metaflac Browser API 测试</h1>
+        <p class="subtitle">测试所有 Metaflac API 功能</p>
+
+        <!-- 文件加载区域 -->
+        <div class="section">
+            <h2>📁 文件加载</h2>
+            <div class="file-input-wrapper">
+                <input type="file" id="flacFileInput" accept=".flac" />
+                <label for="flacFileInput" class="file-input-label">选择 FLAC 文件</label>
+                <span class="file-name" id="fileName">未选择文件</span>
+                <span class="status" id="fileStatus">未加载</span>
+            </div>
+            <div id="fileAlert"></div>
+        </div>
+
+        <!-- 文件信息区域 -->
+        <div class="section" id="fileInfoSection" style="display: none;">
+            <h2>📊 文件信息</h2>
+            <div class="info-grid" id="fileInfoGrid"></div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="testGetMd5sum()">获取 MD5</button>
+                <button class="btn btn-primary" onclick="testGetMinBlocksize()">获取最小块大小</button>
+                <button class="btn btn-primary" onclick="testGetMaxBlocksize()">获取最大块大小</button>
+                <button class="btn btn-primary" onclick="testGetMinFramesize()">获取最小帧大小</button>
+                <button class="btn btn-primary" onclick="testGetMaxFramesize()">获取最大帧大小</button>
+                <button class="btn btn-primary" onclick="testGetSampleRate()">获取采样率</button>
+                <button class="btn btn-primary" onclick="testGetChannels()">获取声道数</button>
+                <button class="btn btn-primary" onclick="testGetBps()">获取位深度</button>
+                <button class="btn btn-primary" onclick="testGetTotalSamples()">获取总采样数</button>
+                <button class="btn btn-primary" onclick="testGetVendorTag()">获取供应商标签</button>
+            </div>
+        </div>
+
+        <!-- 标签区域 -->
+        <div class="section" id="tagsSection" style="display: none;">
+            <h2>🏷️ 标签管理</h2>
+            <div class="tags-list" id="tagsList"></div>
+            <div class="input-group">
+                <label>添加/修改标签 (格式: NAME=VALUE)</label>
+                <input type="text" id="tagInput" placeholder="例如: TITLE=My Song" />
+                <button class="btn btn-success" onclick="testSetTag()">设置标签</button>
+            </div>
+            <div class="input-group">
+                <label>标签名称</label>
+                <input type="text" id="tagNameInput" placeholder="例如: TITLE" />
+                <button class="btn btn-primary" onclick="testGetTag()">获取标签</button>
+                <button class="btn btn-danger" onclick="testRemoveTag()">删除所有匹配标签</button>
+                <button class="btn btn-danger" onclick="testRemoveFirstTag()">删除第一个匹配标签</button>
+            </div>
+            <div class="input-group">
+                <label>导入标签 (每行一个标签，格式: NAME=VALUE)</label>
+                <textarea id="tagsTextarea" placeholder="TITLE=My Song&#10;ARTIST=My Artist"></textarea>
+                <button class="btn btn-success" onclick="testImportTags()">导入标签</button>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="testGetAllTags()">获取所有标签</button>
+                <button class="btn btn-secondary" onclick="testExportTags()">导出标签</button>
+                <button class="btn btn-danger" onclick="testRemoveAllTags()">删除所有标签</button>
+            </div>
+        </div>
+
+        <!-- 图片区域 -->
+        <div class="section" id="picturesSection" style="display: none;">
+            <h2>🖼️ 图片管理</h2>
+            <div class="pictures-list" id="picturesList"></div>
+            <div class="file-input-wrapper">
+                <input type="file" id="pictureFileInput" accept="image/jpeg,image/png" />
+                <label for="pictureFileInput" class="file-input-label">添加图片</label>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="testGetPicturesSpecs()">获取图片规格</button>
+                <button class="btn btn-success" onclick="testExportPicture(0)">导出第一张图片</button>
+            </div>
+        </div>
+
+        <!-- 保存区域 -->
+        <div class="section" id="saveSection" style="display: none;">
+            <h2>💾 保存文件</h2>
+            <div class="actions">
+                <button class="btn btn-success" onclick="testSaveAsBlob()">保存为 Blob</button>
+                <button class="btn btn-success" onclick="testSaveAsArrayBuffer()">保存为 ArrayBuffer</button>
+                <button class="btn btn-success" onclick="testSaveAsBuffer()">保存为 Buffer</button>
+                <button class="btn btn-primary" onclick="testDownload()">下载修改后的文件</button>
+            </div>
+        </div>
+
+        <!-- 日志区域 -->
+        <div class="section">
+            <h2>📝 操作日志</h2>
+            <div class="log" id="log"></div>
+            <button class="btn btn-secondary" onclick="clearLog()">清空日志</button>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+# 依赖
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# 测试文件
+test/
+*.test.js
+*.spec.js
+
+# 开发文件
+.git/
+.gitignore
+.vscode/
+.idea/
+*.log
+*.swp
+*.swo
+*~
+
+# 文档和说明
+BROWSER_USAGE.md
+test/README.md
+PUBLISH_GUIDE.md
+PUBLISH.md
+
+# 构建文件
+dist/
+build/
+*.map
+
+# 临时文件
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# 编辑器配置
+.editorconfig
+.eslintrc*
+.prettierrc*
+tsconfig.json
+
+# CLI 文件（浏览器不需要）
+cli.js
+
+# 其他
+*.flac
+*.mp3
+*.wav
+*.jpg
+*.png
+

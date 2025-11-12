@@ -1,33 +1,47 @@
 {
-  "name": "metaflac-js",
-  "version": "1.0.5",
-  "description": "A pure JavaScript implementation of the metaflac (official FLAC tool)",
+  "name": "metaflac-browser-js",
+  "version": "1.0.0",
+  "description": "A pure JavaScript implementation of the metaflac (official FLAC tool) for browser",
   "main": "index.js",
-  "bin": {
-    "metaflac-js": "cli.js"
+  "browser": "index.js",
+  "type": "commonjs",
+  "files": [
+    "index.js",
+    "lib/",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "browser": "./index.js",
+      "require": "./index.js",
+      "import": "./index.js",
+      "default": "./index.js"
+    }
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ishowshao/metaflac-js.git"
+    "url": "git+https://github.com/520Qiuyu/metaflac-browser-js.git"
   },
   "keywords": [
     "metaflac",
     "flac",
     "metadata",
-    "writer"
+    "audio",
+    "browser",
+    "vorbis",
+    "comment",
+    "tag",
+    "picture",
+    "cover",
+    "browser-only"
   ],
-  "author": "ishowshao",
+  "author": "520Qiuyu",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ishowshao/metaflac-js/issues"
+    "url": "https://github.com/520Qiuyu/metaflac-browser-js/issues"
   },
-  "homepage": "https://github.com/ishowshao/metaflac-js#readme",
-  "dependencies": {
-    "commander": "^2.19.0",
-    "file-type": "^10.7.0",
-    "image-size": "^0.6.3"
-  }
+  "homepage": "https://github.com/520Qiuyu/metaflac-browser-js#readme"
 }
