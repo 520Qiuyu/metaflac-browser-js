@@ -27,7 +27,7 @@
     "build": "vite build && tsc --emitDeclarationOnly --declaration",
     "build:demo": "vite build --config vite.config.demo.ts",
     "build:watch": "vite build --watch",
-    "prepublishOnly": "pnpm run type-check && pnpm run lint && pnpm run build && pnpm pack --dry-run",
+    "prepublishOnly": "pnpm run type-check && pnpm run lint && pnpm run build",
     "format": "prettier --write \"src/**/*.{ts,js,json}\" \"*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\" \"*.{ts,js,json}\"",
     "type-check": "tsc --noEmit",
