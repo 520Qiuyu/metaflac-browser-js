@@ -294,7 +294,7 @@ A: 支持所有主流的打包工具：
 ## 许可证
 
 ISC
-
+packjson
 ## 贡献
 
 欢迎贡献！请随时提交 Pull Request。

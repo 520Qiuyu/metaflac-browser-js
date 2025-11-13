@@ -20,9 +20,7 @@ export interface ImageSize {
  * @param data - 图片数据
  * @returns 包含 mime 属性的对象
  */
-export function detectImageType(
-  data: Uint8Array | ArrayBuffer | BrowserBuffer
-): ImageTypeResult {
+export function detectImageType(data: Uint8Array | ArrayBuffer | BrowserBuffer): ImageTypeResult {
   let bytes: Uint8Array;
   if (data instanceof Uint8Array) {
     bytes = data;
@@ -55,7 +53,13 @@ export function detectImageType(
   }
 
   // GIF: 47 49 46 38
-  if (bytes.length >= 4 && bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) {
+  if (
+    bytes.length >= 4 &&
+    bytes[0] === 0x47 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x38
+  ) {
     return { mime: 'image/gif' };
   }
 
@@ -140,9 +144,7 @@ function parsePngSize(bytes: Uint8Array): ImageSize {
  * @param data - 图片数据
  * @returns 包含 width 和 height 的对象
  */
-export function getImageSize(
-  data: Uint8Array | ArrayBuffer | BrowserBuffer
-): ImageSize {
+export function getImageSize(data: Uint8Array | ArrayBuffer | BrowserBuffer): ImageSize {
   let bytes: Uint8Array;
   if (data instanceof Uint8Array) {
     bytes = data;
@@ -173,7 +175,7 @@ export function getImageSize(
 export function readFileAsArrayBuffer(file: File | Blob): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       if (e.target?.result instanceof ArrayBuffer) {
         resolve(new Uint8Array(e.target.result));
       } else {
@@ -184,4 +186,3 @@ export function readFileAsArrayBuffer(file: File | Blob): Promise<Uint8Array> {
     reader.readAsArrayBuffer(file);
   });
 }
-

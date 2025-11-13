@@ -8,7 +8,7 @@
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
-    
+
     /* 类型检查 */
     "strict": true,
     "noImplicitAny": true,
@@ -23,7 +23,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false,
-    
+
     /* 模块解析 */
     "baseUrl": ".",
     "paths": {
@@ -33,27 +33,25 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    
+
     /* 声明文件 */
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": false,
     "declarationDir": "dist",
-    
+
     /* 输出 */
     "outDir": "dist",
     "rootDir": "src",
     "removeComments": true,
     "sourceMap": true,
     "inlineSources": false,
-    
+
     /* 其他 */
     "skipLibCheck": true,
     "skipDefaultLibCheck": true
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
     "dist",
@@ -65,4 +63,3 @@
     "**/*.spec.js"
   ]
 }
-

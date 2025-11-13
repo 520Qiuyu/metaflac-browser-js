@@ -30,4 +30,3 @@ export default function formatVorbisComment(
 
   return BrowserBuffer.concat(bufferArray);
 }
-

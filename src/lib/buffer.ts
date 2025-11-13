@@ -5,13 +5,7 @@
 
 type BufferEncoding = 'utf8' | 'ascii' | 'hex';
 
-type BufferInput =
-  | number
-  | string
-  | Uint8Array
-  | ArrayBuffer
-  | BrowserBuffer
-  | ArrayLike<number>;
+type BufferInput = number | string | Uint8Array | ArrayBuffer | BrowserBuffer | ArrayLike<number>;
 
 /**
  * 将字符串转换为 Uint8Array
@@ -261,10 +255,7 @@ export class BrowserBuffer {
   /**
    * 从数据创建 Buffer
    */
-  static from(
-    data: BufferInput,
-    encoding?: BufferEncoding
-  ): BrowserBuffer {
+  static from(data: BufferInput, encoding?: BufferEncoding): BrowserBuffer {
     if (data instanceof BrowserBuffer) {
       return data;
     }
@@ -310,4 +301,3 @@ export class BrowserBuffer {
 // 始终使用 BrowserBuffer 以确保浏览器兼容性
 // 在 Node.js 环境中，BrowserBuffer 也提供了与 Buffer 兼容的 API
 export default BrowserBuffer;
-
