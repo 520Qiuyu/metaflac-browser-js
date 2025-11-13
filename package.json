@@ -26,11 +26,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "vite build && tsc --emitDeclarationOnly --declaration",
     "build:watch": "vite build --watch",
-    "prepublishOnly": "npm run build && npm pack --dry-run",
+    "prepublishOnly": "pnpm run build && pnpm pack --dry-run",
     "format": "prettier --write \"src/**/*.{ts,js,json}\" \"*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\" \"*.{ts,js,json}\"",
     "type-check": "tsc --noEmit",
-    "lint": "npm run type-check && npm run format:check"
+    "lint": "pnpm run type-check && pnpm run format:check"
   },
   "repository": {
     "type": "git",

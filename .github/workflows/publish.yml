@@ -24,20 +24,26 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run type check
-        run: npm run type-check
+        run: pnpm run type-check
 
       - name: Run lint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Get package version
         id: package-version
@@ -85,13 +91,14 @@ jobs:
 
       - name: Build project
         if: steps.check-published.outputs.already_published != 'true'
-        run: npm run build
+        run: pnpm run build
 
       - name: Publish to npm
         if: steps.version-check.outputs.version_changed == 'true' && steps.check-published.outputs.already_published != 'true'
-        run: npm publish --access public
+        run: pnpm publish --access public --no-git-checks --registry https://registry.npmjs.org
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Git tag
         if: steps.version-check.outputs.version_changed == 'true' && steps.check-published.outputs.already_published != 'true'
