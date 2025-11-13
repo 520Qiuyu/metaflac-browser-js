@@ -1,0 +1,133 @@
+name: Publish to npm
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - '.prettierrc'
+      - '.prettierignore'
+      - '.markdownlint.json'
+      - 'docs/**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run type check
+        run: npm run type-check
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Get package version
+        id: package-version
+        run: |
+          VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.version)")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $VERSION"
+
+      - name: Check if version changed
+        id: version-check
+        run: |
+          # 获取当前版本
+          CURRENT_VERSION=$(node -e "const pkg = require('./package.json'); console.log(pkg.version)")
+          
+          # 检查是否有前一个提交
+          if git rev-parse HEAD~1 > /dev/null 2>&1; then
+            # 获取前一个提交的版本
+            PREVIOUS_VERSION=$(git show HEAD~1:package.json 2>/dev/null | node -e "const pkg = JSON.parse(require('fs').readFileSync(0, 'utf8')); console.log(pkg.version)" || echo "")
+            
+            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ] && [ -n "$PREVIOUS_VERSION" ]; then
+              echo "version_changed=true" >> $GITHUB_OUTPUT
+              echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION, will publish to npm"
+            else
+              echo "version_changed=false" >> $GITHUB_OUTPUT
+              echo "Version not changed ($CURRENT_VERSION), skipping publish"
+            fi
+          else
+            # 如果是第一次提交，总是发布
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+            echo "First commit, will publish to npm"
+          fi
+
+      - name: Check if version already published
+        if: steps.version-check.outputs.version_changed == 'true'
+        id: check-published
+        run: |
+          VERSION="${{ steps.package-version.outputs.version }}"
+          if npm view metaflac-browser-js@$VERSION version > /dev/null 2>&1; then
+            echo "already_published=true" >> $GITHUB_OUTPUT
+            echo "Version $VERSION already published, skipping"
+          else
+            echo "already_published=false" >> $GITHUB_OUTPUT
+            echo "Version $VERSION not published, will publish"
+          fi
+
+      - name: Build project
+        if: steps.check-published.outputs.already_published != 'true'
+        run: npm run build
+
+      - name: Publish to npm
+        if: steps.version-check.outputs.version_changed == 'true' && steps.check-published.outputs.already_published != 'true'
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create Git tag
+        if: steps.version-check.outputs.version_changed == 'true' && steps.check-published.outputs.already_published != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # 检查标签是否已存在
+          if git rev-parse "v${{ steps.package-version.outputs.version }}" >/dev/null 2>&1; then
+            echo "Tag v${{ steps.package-version.outputs.version }} already exists, skipping tag creation"
+          else
+            git tag -a "v${{ steps.package-version.outputs.version }}" -m "Release v${{ steps.package-version.outputs.version }}"
+            git push origin "v${{ steps.package-version.outputs.version }}"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.version-check.outputs.version_changed == 'true' && steps.check-published.outputs.already_published != 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: Release v${{ steps.package-version.outputs.version }}
+          body: |
+            ## 变更内容
+            
+            - 版本: v${{ steps.package-version.outputs.version }}
+            - 提交: ${{ github.sha }}
+            - 提交信息: ${{ github.event.head_commit.message }}
+            
+            ## 安装
+            
+            ```bash
+            npm install metaflac-browser-js@${{ steps.package-version.outputs.version }}
+            ```
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

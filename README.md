@@ -254,6 +254,7 @@ const flac = new Metaflac(arrayBuffer);
 - [开发调试指南](docs/DEBUG_GUIDE.md) - 如何在 index.html 中调试 TypeScript 源文件
 - [发布 npm 包指南](docs/PUBLISH_GUIDE.md) - 如何发布 npm 包
 - [快速本地调试指南](docs/QUICK_DEBUG.md) - 在其他项目中边调试边使用
+- [GitHub Actions 自动发布设置指南](docs/GITHUB_ACTIONS_SETUP.md) - 如何设置 GitHub Actions 自动发布到 npm
 
 ## 注意事项
 
@@ -305,12 +306,12 @@ ISC
 <table align="center">
   <tr>
     <td align="center">
-      <img src="src/assets/imgs/微信收款码.jpg" alt="微信收款码" width="200" />
+      <img src="public/imgs/微信收款码.jpg" alt="微信收款码" width="200" />
       <br />
       <strong>微信支付</strong>
     </td>
     <td align="center">
-      <img src="src/assets/imgs/支付宝收款码.jpg" alt="支付宝收款码" width="200" />
+      <img src="public/imgs/支付宝收款码.jpg" alt="支付宝收款码" width="200" />
       <br />
       <strong>支付宝</strong>
     </td>
