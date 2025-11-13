@@ -10,7 +10,8 @@
     "src",
     "dist",
     "docs",
-    "README.md"
+    "README.md",
+    "public"
   ],
   "exports": {
     ".": {
