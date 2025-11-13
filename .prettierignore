@@ -1,0 +1,36 @@
+# 依赖
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# 构建输出
+dist/
+build/
+*.min.js
+*.map
+
+# 测试文件
+test/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# 文档
+docs/
+*.md
+
+# 配置文件
+*.config.js
+*.config.mjs
+*.config.ts
+rollup.config.*
+vite.config.*
+
+# 其他
+*.tgz
+*.log
+.DS_Store
+Thumbs.db
+

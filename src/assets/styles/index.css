@@ -261,6 +261,19 @@ h1 {
     margin-bottom: 10px;
 }
 
+.picture-info .picture-index,
+.picture-info .picture-type,
+.picture-info .picture-size {
+    display: block;
+    margin: 2px 0;
+}
+
+.picture-error {
+    color: #dc3545;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
 .log {
     background: #1e1e1e;
     color: #d4d4d4;

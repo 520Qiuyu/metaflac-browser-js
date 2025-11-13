@@ -248,6 +248,13 @@ const flac = new Metaflac(arrayBuffer);
 
 查看 [test/index.html](test/index.html) 获取完整的浏览器示例。
 
+## 文档
+
+- [构建指南](docs/BUILD_GUIDE.md) - 如何构建可用于 `<script>` 标签的 UMD 格式文件
+- [开发调试指南](docs/DEBUG_GUIDE.md) - 如何在 index.html 中调试 TypeScript 源文件
+- [发布 npm 包指南](docs/PUBLISH_GUIDE.md) - 如何发布 npm 包
+- [快速本地调试指南](docs/QUICK_DEBUG.md) - 在其他项目中边调试边使用
+
 ## 注意事项
 
 1. **浏览器专用**：此包仅用于浏览器环境，不支持 Node.js
@@ -290,6 +297,25 @@ ISC
 ## 贡献
 
 欢迎贡献！请随时提交 Pull Request。
+
+## 捐赠
+
+如果这个项目对你有帮助，欢迎捐赠支持开发！
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="src/assets/imgs/微信收款码.jpg" alt="微信收款码" width="200" />
+      <br />
+      <strong>微信支付</strong>
+    </td>
+    <td align="center">
+      <img src="src/assets/imgs/支付宝收款码.jpg" alt="支付宝收款码" width="200" />
+      <br />
+      <strong>支付宝</strong>
+    </td>
+  </tr>
+</table>
 
 ## 参考
 

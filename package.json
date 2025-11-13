@@ -2,28 +2,35 @@
   "name": "metaflac-browser-js",
   "version": "1.0.1",
   "description": "A pure JavaScript implementation of the metaflac (official FLAC tool) for browser",
-  "main": "index.js",
-  "browser": "dist/metaflac-browser-js.esm.js",
-  "type": "commonjs",
+  "main": "./dist/metaflac-browser-js.esm.js",
+  "types": "./dist/index.d.ts",
+  "browser": "./dist/metaflac-browser-js.esm.js",
+  "type": "module",
   "files": [
-    "index.js",
-    "lib/",
-    "dist/",
+    "src",
+    "dist",
+    "doc",
     "README.md"
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "browser": "./dist/metaflac-browser-js.esm.js",
       "import": "./dist/metaflac-browser-js.esm.js",
-      "require": "./index.js",
+      "require": "./dist/metaflac-browser-js.js",
       "default": "./dist/metaflac-browser-js.esm.js"
     }
   },
   "scripts": {
+    "dev": "vite",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c",
-    "build:watch": "rollup -c -w",
-    "prepublishOnly": "npm run build && npm pack --dry-run"
+    "build": "vite build && tsc --emitDeclarationOnly --declaration",
+    "build:watch": "vite build --watch",
+    "prepublishOnly": "npm run build && npm pack --dry-run",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\" \"*.{ts,js,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json}\" \"*.{ts,js,json}\"",
+    "type-check": "tsc --noEmit",
+    "lint": "npm run type-check && npm run format:check"
   },
   "repository": {
     "type": "git",
@@ -51,8 +58,14 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "rollup": "^4.9.0"
+    "prettier": "^3.6.2",
+    "rollup": "^4.9.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2",
+    "@types/node": "^24.10.1",
+    "@vitejs/plugin-legacy": "^7.2.1"
   },
   "unpkg": "dist/metaflac-browser-js.js",
-  "jsdelivr": "dist/metaflac-browser-js.js"
+  "jsdelivr": "dist/metaflac-browser-js.js",
+  "dependencies": {}
 }
